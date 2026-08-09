@@ -36,7 +36,10 @@ const materias = [
     cor: "var(--color-subj-1)",
     resumo: "Fundamentos de estruturas de dados (listas, pilhas, filas, árvores) e análise de complexidade de algoritmos.",
     topicos: ["Complexidade Big O", "Árvores binárias", "Ordenação (quicksort, mergesort)"],
-    proximaEntrega: { tipo: "prova", titulo: "P2 — Árvores e Grafos", data: "2026-08-14" },
+    entregas: [
+      { tipo: "atividade", titulo: "Lista de exercícios AVL", data: "2026-08-09" },
+      { tipo: "prova", titulo: "P2 — Árvores e Grafos", data: "2026-08-14" },
+    ],
   },
   {
     id: "banco-de-dados",
@@ -47,7 +50,10 @@ const materias = [
     cor: "var(--color-subj-2)",
     resumo: "Modelagem relacional, normalização, SQL avançado e introdução a bancos NoSQL.",
     topicos: ["Modelo Entidade-Relacionamento", "Normalização (1FN–3FN)", "JOINs e subqueries"],
-    proximaEntrega: { tipo: "trabalho", titulo: "Modelagem do projeto final", data: "2026-08-11" },
+    entregas: [
+      { tipo: "trabalho", titulo: "Modelagem do projeto final", data: "2026-08-11" },
+      { tipo: "prova", titulo: "P2 — Consultas avançadas", data: "2026-08-20" },
+    ],
   },
   {
     id: "engenharia-software",
@@ -58,7 +64,7 @@ const materias = [
     cor: "var(--color-subj-3)",
     resumo: "Ciclo de vida de software, metodologias ágeis e princípios de arquitetura.",
     topicos: ["Scrum e Kanban", "Princípios SOLID", "Testes automatizados"],
-    proximaEntrega: { tipo: "atividade", titulo: "Sprint review em grupo", data: "2026-08-10" },
+    entregas: [{ tipo: "atividade", titulo: "Sprint review em grupo", data: "2026-08-10" }],
   },
   {
     id: "redes",
@@ -69,9 +75,21 @@ const materias = [
     cor: "var(--color-subj-4)",
     resumo: "Modelo OSI/TCP-IP, protocolos de rede e fundamentos de infraestrutura.",
     topicos: ["Camadas OSI", "TCP vs UDP", "Roteamento e sub-redes"],
-    proximaEntrega: { tipo: "prova", titulo: "P2 — Camada de Transporte", data: "2026-08-17" },
+    entregas: [
+      { tipo: "prova", titulo: "P2 — Camada de Transporte", data: "2026-08-17" },
+      { tipo: "trabalho", titulo: "Relatório de sub-redes", data: "2026-08-21" },
+    ],
   },
 ];
+
+// Retorna a próxima entrega (data mais próxima, priorizando futuras) de uma matéria.
+function getProximaEntrega(materia) {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const ordenadas = [...materia.entregas].sort((a, b) => a.data.localeCompare(b.data));
+  const futuras = ordenadas.filter((e) => new Date(e.data + "T00:00:00") >= hoje);
+  return futuras[0] || ordenadas[ordenadas.length - 1];
+}
 
 const aulasPorMateria = {
   algoritmos: [
@@ -274,7 +292,7 @@ function renderSidebar(el) {
    7. COMPONENTE: card de matéria
    --------------------------------------------------------------------- */
 function subjectCardHtml(materia) {
-  const entrega = materia.proximaEntrega;
+  const entrega = getProximaEntrega(materia);
   const eProva = entrega?.tipo === "prova";
   return `
     <button class="subject-card corner-fold" style="--fold-color:${materia.cor}" data-navigate="/materia/${materia.id}">
@@ -300,7 +318,111 @@ function subjectCardHtml(materia) {
 }
 
 /* ---------------------------------------------------------------------
-   8. PÁGINA: Home
+   8. LINHA DO TEMPO DE ENTREGAS (tabela na Home)
+   --------------------------------------------------------------------- */
+const TIMELINE_DIAS = 16; // janela de dias exibida, a partir de hoje
+
+function toIsoLocal(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function gerarJanelaDeDias(qtd) {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const dias = [];
+  for (let i = 0; i < qtd; i++) {
+    const d = new Date(hoje);
+    d.setDate(hoje.getDate() + i);
+    dias.push(d);
+  }
+  return dias;
+}
+
+const DIAS_ABREV = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+
+function timelineTableHtml() {
+  const dias = gerarJanelaDeDias(TIMELINE_DIAS);
+  const isoHoje = toIsoLocal(new Date());
+
+  const headerCells = dias
+    .map((d) => {
+      const iso = toIsoLocal(d);
+      const isHoje = iso === isoHoje;
+      return `<th class="timeline-day${isHoje ? " today" : ""}">
+        <span class="dow">${DIAS_ABREV[d.getDay()]}</span>
+        <span class="dnum">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}</span>
+      </th>`;
+    })
+    .join("");
+
+  const bodyRows = materias
+    .map((m) => {
+      const cells = dias
+        .map((d) => {
+          const iso = toIsoLocal(d);
+          const isHoje = iso === isoHoje;
+          const entregasNoDia = m.entregas.filter((e) => e.data === iso);
+          return `<td class="timeline-cell${isHoje ? " is-today" : ""}">
+            ${entregasNoDia
+              .map((e) => {
+                const eProva = e.tipo === "prova";
+                return `<span class="timeline-marker ${eProva ? "prova" : "entrega"}" title="${e.titulo} — ${formatarDataLonga(e.data)}">
+                  ${icon(eProva ? "alert" : "clipboard", 10)}
+                </span>`;
+              })
+              .join("")}
+          </td>`;
+        })
+        .join("");
+
+      return `<tr>
+        <td class="timeline-row-name"><span class="dot" style="background:${m.cor}"></span>${m.nome}</td>
+        ${cells}
+      </tr>`;
+    })
+    .join("");
+
+  // Legenda: lista as entregas que caem dentro da janela exibida, em ordem cronológica
+  const isoLimite = toIsoLocal(dias[dias.length - 1]);
+  const proximasNaJanela = materias
+    .flatMap((m) => m.entregas.filter((e) => e.data >= isoHoje && e.data <= isoLimite).map((e) => ({ ...e, materia: m.nome, cor: m.cor })))
+    .sort((a, b) => a.data.localeCompare(b.data));
+
+  return `
+    <section>
+      <div class="section-header">
+        <h2 class="h2">Linha do tempo de entregas</h2>
+        <span class="mono-label">próximos ${TIMELINE_DIAS} dias</span>
+      </div>
+      <div class="timeline-wrap">
+        <table class="timeline-table">
+          <thead><tr><th class="timeline-row-name"></th>${headerCells}</tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>
+      ${
+        proximasNaJanela.length
+          ? `<ul class="timeline-legend">
+              ${proximasNaJanela
+                .map(
+                  (e) => `<li>
+                    <span class="timeline-marker ${e.tipo === "prova" ? "prova" : "entrega"} static">${icon(e.tipo === "prova" ? "alert" : "clipboard", 10)}</span>
+                    <strong>${formatarDataLonga(e.data)}</strong> — ${e.materia}: ${e.titulo}
+                  </li>`
+                )
+                .join("")}
+            </ul>`
+          : `<p class="empty-note" style="margin-top:12px">Nenhuma entrega nos próximos ${TIMELINE_DIAS} dias.</p>`
+      }
+    </section>
+  `;
+}
+
+/* ---------------------------------------------------------------------
+   9. PÁGINA: Home
    --------------------------------------------------------------------- */
 function saudacao() {
   const hora = new Date().getHours();
@@ -343,12 +465,14 @@ function renderHome(container) {
         </div>
         <div class="subject-grid">${materias.map(subjectCardHtml).join("")}</div>
       </section>
+
+      ${timelineTableHtml()}
     </div>
   `;
 }
 
 /* ---------------------------------------------------------------------
-   9. PÁGINA: Matérias (grade completa)
+   10. PÁGINA: Matérias (grade completa)
    --------------------------------------------------------------------- */
 function renderMaterias(container) {
   container.innerHTML = `
@@ -365,7 +489,8 @@ function renderMaterias(container) {
           <tbody>
             ${materias
               .map((m) => {
-                const eProva = m.proximaEntrega?.tipo === "prova";
+                const entrega = getProximaEntrega(m);
+                const eProva = entrega?.tipo === "prova";
                 return `
                   <tr data-navigate="/materia/${m.id}">
                     <td><div class="meta-row"><span class="dot" style="background:${m.cor}"></span><span class="nome">${m.nome}</span></div></td>
@@ -373,8 +498,8 @@ function renderMaterias(container) {
                     <td class="mono-label">${m.diaSemana} · ${m.horario}</td>
                     <td>
                       ${
-                        m.proximaEntrega
-                          ? `<span class="badge ${eProva ? "badge-prova" : "badge-entrega"}">${icon(eProva ? "alert" : "clipboard", 12)} ${m.proximaEntrega.titulo} · ${formatarDataLonga(m.proximaEntrega.data)}</span>`
+                        entrega
+                          ? `<span class="badge ${eProva ? "badge-prova" : "badge-entrega"}">${icon(eProva ? "alert" : "clipboard", 12)} ${entrega.titulo} · ${formatarDataLonga(entrega.data)}</span>`
                           : `<span class="empty-note">—</span>`
                       }
                     </td>
@@ -435,14 +560,15 @@ function renderMateria(container, params) {
         <p class="professor">${materia.professor}</p>
         <p class="resumo">${materia.resumo}</p>
         <div class="chip-row">${materia.topicos.map((t) => `<span class="chip">${t}</span>`).join("")}</div>
-        ${
-          materia.proximaEntrega
-            ? `<div class="entrega-flag ${materia.proximaEntrega.tipo === "prova" ? "badge-prova" : "badge-entrega"}">
-                ${icon(materia.proximaEntrega.tipo === "prova" ? "alert" : "clipboard", 16)}
-                Próxima ${materia.proximaEntrega.tipo === "prova" ? "prova" : "entrega"}: ${materia.proximaEntrega.titulo} — ${formatarDataLonga(materia.proximaEntrega.data)}
-              </div>`
-            : ""
-        }
+        ${(() => {
+          const entrega = getProximaEntrega(materia);
+          if (!entrega) return "";
+          const eProva = entrega.tipo === "prova";
+          return `<div class="entrega-flag ${eProva ? "badge-prova" : "badge-entrega"}">
+                ${icon(eProva ? "alert" : "clipboard", 16)}
+                Próxima ${eProva ? "prova" : "entrega"}: ${entrega.titulo} — ${formatarDataLonga(entrega.data)}
+              </div>`;
+        })()}
       </header>
 
       <section class="aula-selector-row">
