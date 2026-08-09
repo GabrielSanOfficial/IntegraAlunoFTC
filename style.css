@@ -44,8 +44,9 @@ a { color: inherit; text-decoration: none; }
 /* =========================================================
    Layout
    ========================================================= */
-.layout { display: flex; min-height: 100vh; }
-.main { flex: 1; min-width: 0; }
+.layout { min-height: 100vh; position: relative; }
+.main { flex: 1; min-width: 0; margin-left: 260px; transition: margin-left 0.25s ease; }
+.sidebar.collapsed ~ .main { margin-left: 68px; }
 .page { max-width: 960px; margin: 0 auto; padding: 40px 24px; display: flex; flex-direction: column; gap: 32px; }
 .page-narrow { max-width: 640px; }
 
@@ -53,9 +54,11 @@ a { color: inherit; text-decoration: none; }
    Sidebar — elemento assinatura: borda "perfurada" de espiral
    ========================================================= */
 .sidebar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   height: 100vh;
+  z-index: 10;
   flex-shrink: 0;
   background: var(--color-pine);
   color: var(--color-paper);
@@ -63,7 +66,6 @@ a { color: inherit; text-decoration: none; }
   flex-direction: column;
   width: 260px;
   transition: width 0.25s ease;
-  position: relative;
 }
 .sidebar.collapsed { width: 68px; }
 .sidebar::before {
@@ -89,7 +91,7 @@ a { color: inherit; text-decoration: none; }
 .sidebar-user-label { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1; margin: 0 0 4px; }
 .sidebar-user-name { font-family: var(--font-display); font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.sidebar-nav { flex: 1; padding: 16px 8px; display: flex; flex-direction: column; gap: 4px; }
+.sidebar-nav { flex: 1; padding: 16px 8px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
 .nav-link {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 12px; border-radius: 8px;
