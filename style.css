@@ -188,6 +188,49 @@ a { color: inherit; text-decoration: none; }
 .h2 { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0; }
 
 /* =========================================================
+   Linha do tempo de entregas (Home)
+   ========================================================= */
+.timeline-wrap { overflow-x: auto; border: 1px solid var(--color-line); border-radius: 12px; background: rgba(255,255,255,0.5); }
+.timeline-table { border-collapse: collapse; width: 100%; min-width: 760px; }
+
+.timeline-table thead tr { background: var(--color-paper-dim); }
+.timeline-day { padding: 10px 4px; text-align: center; font-family: var(--font-mono); font-size: 11px; color: var(--color-ink-soft); font-weight: 500; white-space: nowrap; }
+.timeline-day .dow { display: block; text-transform: uppercase; opacity: 0.7; }
+.timeline-day .dnum { display: block; margin-top: 2px; }
+.timeline-day.today { color: var(--color-pine); font-weight: 700; }
+
+.timeline-row-name {
+  text-align: left; white-space: nowrap; padding: 10px 16px 10px 12px;
+  font-size: 13px; font-weight: 500; border-top: 1px solid var(--color-line);
+  display: flex; align-items: center; gap: 8px; position: sticky; left: 0;
+  background: var(--color-paper); z-index: 1;
+}
+thead .timeline-row-name { background: var(--color-paper-dim); border-top: none; display: table-cell; }
+
+.timeline-cell {
+  position: relative; min-width: 44px; height: 44px;
+  border-top: 1px solid var(--color-line);
+  text-align: center;
+}
+.timeline-cell::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  height: 2px; background: var(--color-line); transform: translateY(-50%);
+}
+.timeline-cell.is-today { background: rgba(228,166,58,0.08); }
+
+.timeline-marker {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 999px; color: #fff;
+}
+.timeline-marker.prova { background: var(--color-brick); }
+.timeline-marker.entrega { background: var(--color-marigold); color: var(--color-ink); }
+.timeline-marker.static { width: 16px; height: 16px; flex-shrink: 0; }
+
+.timeline-legend { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.timeline-legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-ink-soft); }
+.timeline-legend strong { color: var(--color-ink); font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
+
+/* =========================================================
    Tabela — Matérias
    ========================================================= */
 .table-wrap { border: 1px solid var(--color-line); border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.5); }
