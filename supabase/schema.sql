@@ -334,5 +334,5 @@ create policy "materiais_storage_delete" on storage.objects
 for delete to authenticated
 using (
   bucket_id = 'materiais'
-  and owner_id = auth.uid()
+  and owner_id = auth.uid()::text
 );
