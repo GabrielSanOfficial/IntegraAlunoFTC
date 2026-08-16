@@ -1,0 +1,4 @@
+.env
+node_modules/
+backlogusers.xlsx
+.DS_Store
