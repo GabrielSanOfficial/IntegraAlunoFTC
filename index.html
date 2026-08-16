@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StudyHub</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="auth" class="center"><form id="loginForm" class="card"><h1>StudyHub</h1><p>Entre para acessar sua turma.</p><input id="email" type="email" placeholder="E-mail" required><input id="password" type="password" placeholder="Senha" required><button>Entrar</button><p id="authMsg"></p></form></div>
+<div id="app" hidden><aside><h2>StudyHub</h2><div id="profile"></div><nav><button data-view="home">Início</button><button data-view="subjects">Matérias</button><button data-view="quiz">Simulados</button></nav><button id="logout">Sair</button></aside><main id="main"></main></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="app.js"></script></body></html>
